@@ -1,0 +1,19 @@
+# Java/Compiled outputs
+*.class
+out/
+bin/
+target/
+
+# IDE files
+.vscode/
+*.iml
+.idea/
+
+# Certificates & dynamic output
+certificates/*.json
+demo_output*.txt
+explainable_output.txt
+
+# OS generated files
+.DS_Store
+Thumbs.db

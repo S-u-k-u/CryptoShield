@@ -1,0 +1,177 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'>
+<title>CryptoShield — Enforcement Report</title>
+<style>
+body{font-family:Segoe UI,sans-serif;background:#0D1B2A;color:#AED6F1;margin:0;padding:20px}
+h1{color:#D4AC0D;font-size:2em} h2{color:#2E86C1;border-bottom:1px solid #1B4F72;padding-bottom:6px}
+.card{background:#1B4F72;border-radius:8px;padding:16px;margin:10px 0;border-left:4px solid #2E86C1}
+.card.violated{border-left-color:#C0392B}
+.card.verified{border-left-color:#1E8449}
+.card.unresolvable{border-left-color:#D4AC0D}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.8em;font-weight:bold}
+.badge.VERIFIED{background:#1E8449;color:#fff}
+.badge.UNRESOLVABLE{background:#D4AC0D;color:#000}
+.badge.DETECTED{background:#C0392B;color:#fff}
+.field{margin:4px 0;font-size:0.9em}
+.label{color:#7F8C8D;display:inline-block;width:200px}
+.value{color:#ECF0F1}
+.value.ok{color:#1E8449}
+.value.bad{color:#C0392B}
+.stat-row{display:flex;gap:20px;flex-wrap:wrap;margin:20px 0}
+.stat{background:#1B4F72;border-radius:8px;padding:16px;min-width:120px;text-align:center}
+.stat .num{font-size:2.5em;font-weight:bold;color:#D4AC0D}
+.stat .lbl{font-size:0.85em;color:#7F8C8D}
+pre{background:#0A1628;padding:12px;border-radius:6px;font-size:0.8em;overflow-x:auto;color:#79B8FF}
+</style></head><body>
+<h1>🛡 CryptoShield — Live Enforcement Report</h1>
+<div class='stat-row'>
+<div class='stat'><div class='num'>7</div><div class='lbl'>Total Violations</div></div>
+<div class='stat'><div class='num'>6</div><div class='lbl'>Enforced &amp; Verified</div></div>
+<div class='stat'><div class='num'>0</div><div class='lbl'>Unresolvable</div></div>
+<div class='stat'><div class='num'>2</div><div class='lbl'>Cipher Violations</div></div>
+<div class='stat'><div class='num'>2</div><div class='lbl'>Hash Violations</div></div>
+</div>
+<h2>Enforcement Events</h2>
+<div class='card verified'>
+<span class='badge VERIFIED'>VERIFIED</span>
+&nbsp;&nbsp;<strong>CS-8247-1000</strong>
+<div class='field'><span class='label'>Original Algorithm</span><span class='value bad'>DES</span></div>
+<div class='field'><span class='label'>Corrected To</span><span class='value ok'>AES/GCM/NoPadding</span></div>
+<div class='field'><span class='label'>CWE</span><span class='value'>CWE-327</span></div>
+<div class='field'><span class='label'>Caller</span><span class='value'>PaymentService.getCipher()</span></div>
+<div class='field'><span class='label'>Iterations</span><span class='value'>2</span></div>
+<div class='field'><span class='label'>ML Confidence</span><span class='value ok'>65.56%</span></div>
+<div class='field'><span class='label'>Whitelist Check</span><span class='value ok'>PASS ✓</span></div>
+<div class='field'><span class='label'>ECB Pattern Test</span><span class='value ok'>PASS ✓</span></div>
+<details><summary style='cursor:pointer;color:#7F8C8D;margin-top:8px'>Enforcement Trace</summary>
+<pre>Intercepted at: PaymentService.getCipher()
+Corrector: DES → AES/GCM/NoPadding
+  [Iteration 1] Config: AES/GCM/NoPadding
+    Check 1 (whitelist): PASS
+    ECB pattern: none (blocks differ)
+    Check 2 (ECB test):  PASS
+    Check 3 (config stable): not yet
+  [Iteration 2] Config: AES/GCM/NoPadding
+    Check 1 (whitelist): PASS
+    ECB pattern: none (blocks differ)
+    Check 2 (ECB test):  PASS
+    Check 3 (config stable): PASS ← FIXED POINT
+  ✓ FIXED POINT REACHED at iteration 2
+</pre></details>
+</div>
+<div class='card verified'>
+<span class='badge VERIFIED'>VERIFIED</span>
+&nbsp;&nbsp;<strong>CS-8564-1001</strong>
+<div class='field'><span class='label'>Original Algorithm</span><span class='value bad'>MD5</span></div>
+<div class='field'><span class='label'>Corrected To</span><span class='value ok'>SHA-256</span></div>
+<div class='field'><span class='label'>CWE</span><span class='value'>CWE-328</span></div>
+<div class='field'><span class='label'>Caller</span><span class='value'>PaymentService.getMessageDigest()</span></div>
+<div class='field'><span class='label'>Iterations</span><span class='value'>1</span></div>
+<div class='field'><span class='label'>ML Confidence</span><span class='value ok'>71.10%</span></div>
+<div class='field'><span class='label'>Whitelist Check</span><span class='value ok'>PASS ✓</span></div>
+<div class='field'><span class='label'>ECB Pattern Test</span><span class='value ok'>PASS ✓</span></div>
+<details><summary style='cursor:pointer;color:#7F8C8D;margin-top:8px'>Enforcement Trace</summary>
+<pre>Intercepted at: PaymentService.getMessageDigest()
+Corrector: MD5 → SHA-256
+  [Iteration 1] Hash: SHA-256
+    Check 1 (whitelist): PASS
+    Hash output length: 256 bits ≥ 256 ✓
+    Check 2 (digest length): PASS
+  ✓ FIXED POINT REACHED at iteration 1
+</pre></details>
+</div>
+<div class='card verified'>
+<span class='badge VERIFIED'>VERIFIED</span>
+&nbsp;&nbsp;<strong>CS-8644-1002</strong>
+<div class='field'><span class='label'>Original Algorithm</span><span class='value bad'>SHA-1</span></div>
+<div class='field'><span class='label'>Corrected To</span><span class='value ok'>SHA-256</span></div>
+<div class='field'><span class='label'>CWE</span><span class='value'>CWE-328</span></div>
+<div class='field'><span class='label'>Caller</span><span class='value'>PaymentService.getMessageDigest()</span></div>
+<div class='field'><span class='label'>Iterations</span><span class='value'>1</span></div>
+<div class='field'><span class='label'>ML Confidence</span><span class='value ok'>71.10%</span></div>
+<div class='field'><span class='label'>Whitelist Check</span><span class='value ok'>PASS ✓</span></div>
+<div class='field'><span class='label'>ECB Pattern Test</span><span class='value ok'>PASS ✓</span></div>
+<details><summary style='cursor:pointer;color:#7F8C8D;margin-top:8px'>Enforcement Trace</summary>
+<pre>Intercepted at: PaymentService.getMessageDigest()
+Corrector: SHA-1 → SHA-256
+  [Iteration 1] Hash: SHA-256
+    Check 1 (whitelist): PASS
+    Hash output length: 256 bits ≥ 256 ✓
+    Check 2 (digest length): PASS
+  ✓ FIXED POINT REACHED at iteration 1
+</pre></details>
+</div>
+<div class='card verified'>
+<span class='badge VERIFIED'>VERIFIED</span>
+&nbsp;&nbsp;<strong>CS-8714-1003</strong>
+<div class='field'><span class='label'>Original Algorithm</span><span class='value bad'>AES/ECB/PKCS5Padding</span></div>
+<div class='field'><span class='label'>Corrected To</span><span class='value ok'>AES/GCM/NoPadding</span></div>
+<div class='field'><span class='label'>CWE</span><span class='value'>CWE-327</span></div>
+<div class='field'><span class='label'>Caller</span><span class='value'>PaymentService.getCipher()</span></div>
+<div class='field'><span class='label'>Iterations</span><span class='value'>2</span></div>
+<div class='field'><span class='label'>ML Confidence</span><span class='value ok'>65.56%</span></div>
+<div class='field'><span class='label'>Whitelist Check</span><span class='value ok'>PASS ✓</span></div>
+<div class='field'><span class='label'>ECB Pattern Test</span><span class='value ok'>PASS ✓</span></div>
+<details><summary style='cursor:pointer;color:#7F8C8D;margin-top:8px'>Enforcement Trace</summary>
+<pre>Intercepted at: PaymentService.getCipher()
+Corrector: AES/ECB/PKCS5Padding → AES/GCM/NoPadding
+  [Iteration 1] Config: AES/GCM/NoPadding
+    Check 1 (whitelist): PASS
+    ECB pattern: none (blocks differ)
+    Check 2 (ECB test):  PASS
+    Check 3 (config stable): not yet
+  [Iteration 2] Config: AES/GCM/NoPadding
+    Check 1 (whitelist): PASS
+    ECB pattern: none (blocks differ)
+    Check 2 (ECB test):  PASS
+    Check 3 (config stable): PASS ← FIXED POINT
+  ✓ FIXED POINT REACHED at iteration 2
+</pre></details>
+</div>
+<div class='card verified'>
+<span class='badge VERIFIED'>VERIFIED</span>
+&nbsp;&nbsp;<strong>CS-8793-1004</strong>
+<div class='field'><span class='label'>Original Algorithm</span><span class='value bad'>CONSTANT_IV</span></div>
+<div class='field'><span class='label'>Corrected To</span><span class='value ok'>—</span></div>
+<div class='field'><span class='label'>CWE</span><span class='value'>CWE-329</span></div>
+<div class='field'><span class='label'>Caller</span><span class='value'>PaymentService.getIvParameterSpec()</span></div>
+<div class='field'><span class='label'>Iterations</span><span class='value'>0</span></div>
+<div class='field'><span class='label'>IV Entropy Before</span><span class='value bad'>2.8522 bits/byte</span></div>
+<div class='field'><span class='label'>IV Entropy After</span><span class='value ok'>3.8750 bits/byte</span></div>
+<div class='field'><span class='label'>Whitelist Check</span><span class='value bad'>FAIL ✗</span></div>
+<div class='field'><span class='label'>ECB Pattern Test</span><span class='value bad'>FAIL ✗</span></div>
+<details><summary style='cursor:pointer;color:#7F8C8D;margin-top:8px'>Enforcement Trace</summary>
+<pre>Intercepted at: PaymentService.getIvParameterSpec()
+</pre></details>
+</div>
+<div class='card detected'>
+<span class='badge DETECTED'>DETECTED</span>
+&nbsp;&nbsp;<strong>CS-8805-1005</strong>
+<div class='field'><span class='label'>Original Algorithm</span><span class='value bad'>HARDCODED_SEED</span></div>
+<div class='field'><span class='label'>Corrected To</span><span class='value ok'>—</span></div>
+<div class='field'><span class='label'>CWE</span><span class='value'>CWE-338</span></div>
+<div class='field'><span class='label'>Caller</span><span class='value'>PaymentService.getSecureRandom()</span></div>
+<div class='field'><span class='label'>Iterations</span><span class='value'>0</span></div>
+<div class='field'><span class='label'>Whitelist Check</span><span class='value bad'>FAIL ✗</span></div>
+<div class='field'><span class='label'>ECB Pattern Test</span><span class='value bad'>FAIL ✗</span></div>
+<details><summary style='cursor:pointer;color:#7F8C8D;margin-top:8px'>Enforcement Trace</summary>
+<pre>Intercepted at: PaymentService.getSecureRandom()
+</pre></details>
+</div>
+<div class='card verified'>
+<span class='badge VERIFIED'>VERIFIED</span>
+&nbsp;&nbsp;<strong>CS-8990-1006</strong>
+<div class='field'><span class='label'>Original Algorithm</span><span class='value bad'>SMALL_KEY</span></div>
+<div class='field'><span class='label'>Corrected To</span><span class='value ok'>—</span></div>
+<div class='field'><span class='label'>CWE</span><span class='value'>CWE-326</span></div>
+<div class='field'><span class='label'>Caller</span><span class='value'>PaymentService.getKeyPairGenerator()</span></div>
+<div class='field'><span class='label'>Iterations</span><span class='value'>0</span></div>
+<div class='field'><span class='label'>Whitelist Check</span><span class='value bad'>FAIL ✗</span></div>
+<div class='field'><span class='label'>ECB Pattern Test</span><span class='value bad'>FAIL ✗</span></div>
+<details><summary style='cursor:pointer;color:#7F8C8D;margin-top:8px'>Enforcement Trace</summary>
+<pre>Intercepted at: PaymentService.getKeyPairGenerator()
+Original Key Size: 512 bits
+Corrected to : 2048 bits
+</pre></details>
+</div>
+<p style='color:#7F8C8D;font-size:0.8em;margin-top:30px'>Generated by CryptoShield — Sanjay Venkat &amp; Sukumaran Sakthevelan</p>
+</body></html>

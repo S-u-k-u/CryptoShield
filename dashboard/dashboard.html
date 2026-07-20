@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CryptoShield — Live Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #0D1B2A;
+  color: #AED6F1;
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────── */
+header {
+  background: #0A1220;
+  border-bottom: 2px solid #D4AC0D;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+header .logo { font-size: 1.6em; font-weight: 800; color: #D4AC0D; letter-spacing: -0.5px; }
+header .sub  { color: #7F8C8D; font-size: 0.85em; }
+header .badge {
+  margin-left: auto;
+  background: #1E8449;
+  color: white;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.8em;
+  font-weight: bold;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.6; }
+}
+
+/* ── Stats bar ───────────────────────────────────────────────────────── */
+.stats {
+  display: flex;
+  gap: 0;
+  background: #1B4F72;
+  border-bottom: 1px solid #2E86C1;
+}
+.stat {
+  flex: 1;
+  padding: 14px 20px;
+  text-align: center;
+  border-right: 1px solid #2E86C1;
+}
+.stat:last-child { border-right: none; }
+.stat .num { font-size: 2em; font-weight: 800; color: #D4AC0D; }
+.stat .lbl { font-size: 0.75em; color: #7F8C8D; margin-top: 2px; }
+
+/* ── Grid ─────────────────────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 16px;
+  padding: 16px;
+}
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+.panel {
+  background: #1B4F72;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #2E86C1;
+}
+.panel h2 {
+  font-size: 0.95em;
+  color: #D4AC0D;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #2E86C1;
+}
+
+/* ── Enforcement feed ─────────────────────────────────────────────────── */
+#feed {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.event {
+  background: #0D1B2A;
+  border-radius: 6px;
+  padding: 10px 12px;
+  border-left: 4px solid #2E86C1;
+  font-size: 0.88em;
+  animation: slideIn 0.3s ease;
+}
+.event.VIOLATION { border-left-color: #C0392B; }
+.event.VERIFIED  { border-left-color: #1E8449; }
+.event.SAFE      { border-left-color: #2E86C1; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.event-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.event-id   { color: #D4AC0D; font-weight: bold; font-size: 0.85em; }
+.event-type { color: #7F8C8D; font-size: 0.78em; }
+.event-row  { color: #AED6F1; }
+.event-row .key { color: #7F8C8D; }
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.75em;
+  font-weight: bold;
+}
+.badge.VERIFIED     { background: #1E8449; color: #fff; }
+.badge.VIOLATION    { background: #C0392B; color: #fff; }
+.badge.SAFE         { background: #2E86C1; color: #fff; }
+.badge.UNRESOLVABLE { background: #D4AC0D; color: #000; }
+
+/* ── ML confidence ────────────────────────────────────────────────────── */
+#ml-list { display: flex; flex-direction: column; gap: 10px; max-height: 320px; overflow-y: auto; }
+.ml-item { }
+.ml-label { display: flex; justify-content: space-between; font-size: 0.85em; margin-bottom: 4px; }
+.ml-bar-bg { background: #0D1B2A; border-radius: 4px; height: 10px; overflow: hidden; }
+.ml-bar    { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+
+/* ── Charts ──────────────────────────────────────────────────────────── */
+.chart-wrap { position: relative; height: 260px; }
+
+/* ── Certificate viewer ──────────────────────────────────────────────── */
+#cert-list { max-height: 320px; overflow-y: auto; }
+.cert-item {
+  background: #0D1B2A;
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  border: 1px solid #2E86C1;
+  font-size: 0.85em;
+  transition: border-color 0.2s;
+}
+.cert-item:hover { border-color: #D4AC0D; }
+pre.cert-json {
+  background: #050D18;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 0.78em;
+  overflow-x: auto;
+  color: #79B8FF;
+  margin-top: 8px;
+  display: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+pre.cert-json.open { display: block; }
+
+/* ── Empty state ─────────────────────────────────────────────────────── */
+.empty { text-align: center; color: #7F8C8D; padding: 32px; font-size: 0.9em; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">🛡 CryptoShield</div>
+    <div class="sub">Self-Verifying Runtime Enforcement Framework</div>
+  </div>
+  <div class="badge" id="status-badge">● LIVE</div>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="s-total">0</div><div class="lbl">Violations Intercepted</div></div>
+  <div class="stat"><div class="num" id="s-verified">0</div><div class="lbl">Enforced &amp; Verified</div></div>
+  <div class="stat"><div class="num" id="s-unres">0</div><div class="lbl">Unresolvable</div></div>
+  <div class="stat"><div class="num" id="s-iter">0</div><div class="lbl">Avg Iterations</div></div>
+  <div class="stat"><div class="num" id="s-safe">0</div><div class="lbl">Safe Calls Passed</div></div>
+</div>
+
+<div class="grid">
+
+  <!-- Panel 1: Feed -->
+  <div class="panel">
+    <h2>📡 Enforcement Feed</h2>
+    <div id="feed"><div class="empty">Waiting for enforcement events…<br>Run CryptoShieldMain to start</div></div>
+  </div>
+
+  <!-- Panel 2: ML Confidence -->
+  <div class="panel">
+    <h2>🤖 ML Classifier Confidence</h2>
+    <div id="ml-list"><div class="empty">No ML scores yet</div></div>
+  </div>
+
+  <!-- Panel 3: CWE Chart -->
+  <div class="panel">
+    <h2>📊 CWE Violation Breakdown</h2>
+    <div class="chart-wrap"><canvas id="cweChart"></canvas></div>
+  </div>
+
+  <!-- Panel 4: Certificate Viewer -->
+  <div class="panel">
+    <h2>📋 Security Certificates</h2>
+    <div id="cert-list"><div class="empty">Certificates appear here after each enforcement</div></div>
+  </div>
+
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+const state = {
+  events:   [],   // all ViolationRecord objects loaded from JSON files
+  cweCounts: {},
+  safeCount: 0,
+  certFiles: [],
+};
+
+// ── CWE Chart ──────────────────────────────────────────────────────────────
+const cweCtx = document.getElementById('cweChart').getContext('2d');
+const cweChart = new Chart(cweCtx, {
+  type: 'doughnut',
+  data: {
+    labels: [],
+    datasets: [{
+      data: [],
+      backgroundColor: ['#C0392B','#D4AC0D','#6C3483','#2E86C1','#1E8449'],
+      borderColor: '#1B4F72',
+      borderWidth: 2,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right', labels: { color: '#AED6F1', font: { size: 11 } } },
+    }
+  }
+});
+
+// ── Load certificates from /certificates/*.json ────────────────────────────
+async function loadCertificates() {
+  // Fetch the directory listing via the report HTML (which lists all certs)
+  try {
+    const res = await fetch('./certificates/report.html', { cache: 'no-store' });
+    if (!res.ok) { setTimeout(loadCertificates, 2000); return; }
+    const html = await res.text();
+
+    // Parse session IDs from HTML
+    const ids = [...html.matchAll(/session_id.*?"([^"]+)"/g)].map(m => m[1]);
+    const newIds = ids.filter(id => !state.certFiles.includes(id));
+
+    for (const id of newIds) {
+      state.certFiles.push(id);
+      try {
+        const jres = await fetch(`./certificates/${id}.json`, { cache: 'no-store' });
+        if (!jres.ok) continue;
+        const cert = await jres.json();
+        addEvent(cert);
+      } catch (e) {}
+    }
+
+    updateStats();
+    setTimeout(loadCertificates, 2000); // Poll every 2 seconds
+  } catch (e) {
+    setTimeout(loadCertificates, 3000);
+  }
+}
+
+function addEvent(cert) {
+  state.events.push(cert);
+
+  const status = cert.fixed_point_reached ? 'VERIFIED' : 'VIOLATION';
+  const feed = document.getElementById('feed');
+
+  // Remove empty state
+  const empty = feed.querySelector('.empty');
+  if (empty) empty.remove();
+
+  // Create event card
+  const div = document.createElement('div');
+  div.className = `event ${status}`;
+  const mlStr = cert.ml_confidence != null
+    ? `<span style="color:#6C3483">ML: ${(cert.ml_confidence*100).toFixed(0)}%</span>`
+    : '';
+  div.innerHTML = `
+    <div class="event-header">
+      <span class="event-id">${cert.session_id}</span>
+      <span class="badge ${status}">${status}</span>
+      <span class="event-type">${cert.violation_type || cert.type || ''}</span>
+      ${mlStr}
+    </div>
+    <div class="event-row">
+      <span class="key">Original: </span><span style="color:#C0392B">${cert.original_algorithm}</span>
+      &nbsp;→&nbsp;
+      <span style="color:#1E8449">${cert.corrected_algorithm || '—'}</span>
+    </div>
+    <div class="event-row"><span class="key">CWE: </span>${cert.cwe_violated || '—'}
+      &nbsp;|&nbsp;<span class="key">Iterations: </span>${cert.enforcement_iterations || 0}
+      &nbsp;|&nbsp;<span class="key">Caller: </span>${cert.caller_class || '—'}
+    </div>
+  `;
+  feed.prepend(div);
+
+  // ML confidence bar
+  if (cert.ml_confidence != null) {
+    const mlList = document.getElementById('ml-list');
+    const empty2 = mlList.querySelector('.empty');
+    if (empty2) empty2.remove();
+
+    const pct = Math.round(cert.ml_confidence * 100);
+    const col = pct > 70 ? '#C0392B' : pct > 40 ? '#D4AC0D' : '#1E8449';
+    const mlDiv = document.createElement('div');
+    mlDiv.className = 'ml-item';
+    mlDiv.innerHTML = `
+      <div class="ml-label">
+        <span>${cert.original_algorithm}</span>
+        <span style="color:${col};font-weight:bold">${pct}% MISUSE</span>
+      </div>
+      <div class="ml-bar-bg">
+        <div class="ml-bar" style="width:${pct}%;background:${col}"></div>
+      </div>
+    `;
+    mlList.prepend(mlDiv);
+  }
+
+  // CWE chart
+  const cwe = cert.cwe_violated || 'Unknown';
+  state.cweCounts[cwe] = (state.cweCounts[cwe] || 0) + 1;
+  cweChart.data.labels   = Object.keys(state.cweCounts);
+  cweChart.data.datasets[0].data = Object.values(state.cweCounts);
+  cweChart.update();
+
+  // Certificate viewer
+  addCertCard(cert);
+}
+
+function addCertCard(cert) {
+  const list = document.getElementById('cert-list');
+  const empty = list.querySelector('.empty');
+  if (empty) empty.remove();
+
+  const div = document.createElement('div');
+  div.className = 'cert-item';
+  const pre = document.createElement('pre');
+  pre.className = 'cert-json';
+  pre.textContent = JSON.stringify(cert, null, 2);
+
+  div.innerHTML = `
+    <strong style="color:#D4AC0D">${cert.session_id}</strong>
+    &nbsp;|&nbsp; ${cert.original_algorithm} → ${cert.corrected_algorithm || '—'}
+    &nbsp;|&nbsp; <span class="badge ${cert.fixed_point_reached ? 'VERIFIED' : 'VIOLATION'}">${cert.status}</span>
+  `;
+  div.appendChild(pre);
+  div.addEventListener('click', () => pre.classList.toggle('open'));
+  list.prepend(div);
+}
+
+function updateStats() {
+  const total    = state.events.length;
+  const verified = state.events.filter(e => e.fixed_point_reached).length;
+  const unres    = state.events.filter(e => e.status === 'UNRESOLVABLE').length;
+  const avgIter  = total > 0
+    ? (state.events.reduce((s, e) => s + (e.enforcement_iterations || 0), 0) / total).toFixed(1)
+    : 0;
+
+  document.getElementById('s-total').textContent    = total;
+  document.getElementById('s-verified').textContent = verified;
+  document.getElementById('s-unres').textContent    = unres;
+  document.getElementById('s-iter').textContent     = avgIter;
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadCertificates();
+});
+</script>
+</body>
+</html>

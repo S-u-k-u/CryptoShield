@@ -1,0 +1,43 @@
+{
+  "accuracy": 1.0,
+  "features": [
+    "algo",
+    "api_type",
+    "rule_flagged",
+    "iv_entropy",
+    "key_size"
+  ],
+  "algo_map": {
+    "DES": 0,
+    "DESEDE": 1,
+    "3DES": 1,
+    "RC4": 2,
+    "RC2": 3,
+    "BLOWFISH": 4,
+    "AES/ECB/PKCS5PADDING": 5,
+    "AES/ECB/NOPADDING": 6,
+    "AES": 7,
+    "AES/GCM/NOPADDING": 10,
+    "AES/CBC/PKCS5PADDING": 11,
+    "CHACHA20": 12,
+    "MD5": 20,
+    "MD4": 21,
+    "SHA-1": 22,
+    "SHA1": 22,
+    "SHA": 23,
+    "MD2": 24,
+    "SHA-256": 30,
+    "SHA-384": 31,
+    "SHA-512": 32,
+    "SHA3-256": 33,
+    "SHA3-512": 34,
+    "UNKNOWN": 99
+  },
+  "api_map": {
+    "CIPHER": 0,
+    "DIGEST": 1,
+    "SECURERANDOM": 2,
+    "KEYGEN": 3,
+    "IV": 4
+  }
+}
