@@ -1,6 +1,8 @@
 # 🛡 CryptoShield
 ### Self-Verifying Runtime Enforcement Framework for Crypto API Security
 
+> **🚧 WORK IN PROGRESS:** This is an ongoing experimental research project for our university coursework. It is currently under active development. The enforcement rules, performance, and architecture are still being refined and are not yet suitable for production environments.
+
 **Authors:** Sanjay Venkat (23BCE1928) & Sukumaran Sakthevelan (23BCE1876)  
 **Course:** Cryptography — Semester End Project  
 **Based on:** Torres et al. (2023) — *Runtime Verification of Crypto APIs*, IEEE TSE
